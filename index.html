@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Recipe Finder</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 sidebar py-5 px-4">
+                <h1 class="h2 text-light bg-dark text-center p-3 rounded">Food Recipe Finder</h1>
+                <!-- Form to search for recipes -->
+                <form id="search-recipes-form" class="mt-4">
+                    <div class="mb-3">
+                        <label for="query" class="form-label">Search Recipes:</label>
+                        <input type="text" id="query" name="query" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </form>
+                <!-- Nutritional Information Section -->
+                <h2 class="mt-4 mb-3">Nutritional Information</h2>
+                <form id="nutrition-form">
+                    <label for="ingredient">Ingredient:</label>
+                    <input type="text" id="ingredient" name="ingredient" placeholder="e.g., Apple">
+                    <button type="submit">Get Nutrition</button>
+                </form>
+                <div id="nutrition-details"></div>                
+            </div>
+            <div class="col-md-9 main-content p-5">
+                <!-- Display search results -->
+                <h2>Search Results</h2>
+                <ul id="recipes-list" class="list-unstyled"></ul>
+                <!-- Display recipe details -->
+                <h2>Recipe Details</h2>
+                <div id="recipe-details" class="recipe-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('search-recipes-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            const response = await fetch(`/api/recipes/search?query=${query}`);
+            if (!response.ok) {
+                console.error('Failed to fetch recipes');
+                return;
+            }
+            const result = await response.json();
+            const recipesList = document.getElementById('recipes-list');
+            recipesList.innerHTML = '';
+            result.results.forEach(recipe => {
+                const listItem = document.createElement('li');
+                listItem.textContent = recipe.title;
+                listItem.addEventListener('click', async () => {
+                    const recipeResponse = await fetch(`/api/recipes/${recipe.id}/information`);
+                    if (!recipeResponse.ok) {
+                        console.error('Failed to fetch recipe details');
+                        return;
+                    }
+                    const recipeDetails = await recipeResponse.json();
+                    renderRecipeDetails(recipeDetails);
+                });
+                recipesList.appendChild(listItem);
+            });
+        });
+
+        document.getElementById('nutrition-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const ingredient = document.getElementById('ingredient').value;
+            const response = await fetch(`/api/nutrition?ingredient=${ingredient}`);
+            if (!response.ok) {
+                console.error('Failed to fetch nutritional data');
+                return;
+            }
+            const nutritionData = await response.json();
+            const nutritionDetails = document.getElementById('nutrition-details');
+            // Display nutritional information - example just converts JSON to a readable string
+            nutritionDetails.innerHTML = JSON.stringify(nutritionData, null, 2); // Adjust according to actual API response
+            });
+
+        function renderRecipeDetails(recipe) {
+            const recipeDetailsContainer = document.getElementById('recipe-details');
+            recipeDetailsContainer.innerHTML = '';
+
+            const title = document.createElement('h2');
+            title.textContent = recipe.title;
+            recipeDetailsContainer.appendChild(title);
+
+            const image = document.createElement('img');
+            image.src = recipe.image;
+            image.alt = recipe.title;
+            recipeDetailsContainer.appendChild(image);
+
+            const summary = document.createElement('p');
+            summary.innerHTML = recipe.summary;
+            recipeDetailsContainer.appendChild(summary);
+
+            const ingredientsTitle = document.createElement('h3');
+            ingredientsTitle.textContent = 'Ingredients:';
+            recipeDetailsContainer.appendChild(ingredientsTitle);
+
+            const ingredientsList = document.createElement('ul');
+            recipe.extendedIngredients.forEach(ingredient => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${ingredient.amount} ${ingredient.unit} ${ingredient.name}`;
+                ingredientsList.appendChild(listItem);
+            });
+            recipeDetailsContainer.appendChild(ingredientsList);
+
+            const instructionsTitle = document.createElement('h3');
+            instructionsTitle.textContent = 'Instructions:';
+            recipeDetailsContainer.appendChild(instructionsTitle);
+
+            const instructions = document.createElement('ol');
+            recipe.analyzedInstructions[0].steps.forEach(step => {
+                const listItem = document.createElement('li');
+                listItem.textContent = step.step;
+                instructions.appendChild(listItem);
+            });
+            recipeDetailsContainer.appendChild(instructions);
+        }
+
+        // Function to handle the form submission event
+            document.getElementById('nutrition-form').addEventListener('submit', async (e) => {
+                e.preventDefault(); // Prevent the default form submission behavior
+                const ingredient = document.getElementById('ingredient').value; // Get the ingredient from the input field
+                try {
+                    const response = await fetch(`/api/nutrition?ingredient=${encodeURIComponent(ingredient)}`); // Make a fetch request to the server-side route
+                    if (!response.ok) { // Check if the response was not successful
+                        console.error('Failed to fetch nutritional data');
+                        document.getElementById('nutrition-details').innerText = 'Failed to fetch nutritional data. Please try again.';
+                        return;
+                    }
+                    const nutritionData = await response.json(); // Parse the JSON response
+
+                    // Assuming the API returns an array of foods; adjust based on actual response structure
+                    const nutritionDetails = document.getElementById('nutrition-details');
+                    if (nutritionData && nutritionData.foods && nutritionData.foods.length > 0) {
+                        // Clear previous details
+                        nutritionDetails.innerHTML = '';
+            
+                        // Create a list to display each food item and its details
+                        const list = document.createElement('ul');
+                        nutritionData.foods.forEach(food => {
+                            const item = document.createElement('li');
+                            item.textContent = `${food.description} - Calories: ${food.foodNutrients.find(n => n.nutrientName === 'Energy').value}`;
+                            list.appendChild(item);
+                    });
+                    nutritionDetails.appendChild(list);
+                } else {
+                    nutritionDetails.innerText = 'No nutritional data found for this ingredient.';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('nutrition-details').innerText = 'Error fetching nutritional data.';
+            }
+        });
+    </script>
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

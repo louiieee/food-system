@@ -1,0 +1,132 @@
+/* Reset some default styles */
+body, h1, h2, ul, li {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    background-color: #f8f9fa;
+    min-height: 100vh; /* Full viewport height */
+}
+
+.sidebar {
+    width: 300px; /* Increased width from 250px */
+    background-color: #ffffff;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    height: 100vh; /* Full height */
+    transition: transform 0.3s ease; /* Smooth transition for responsive behavior */
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centering content horizontally */
+}
+
+form {
+    width: 100%; /* Ensuring form elements use full available width */
+    margin-bottom: 20px;
+}
+
+label, input[type="text"], input[type="number"], button {
+    display: block;
+    width: 100%;
+}
+
+input[type="text"], input[type="number"], button {
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+h2 {
+    width: 100%; /* Ensuring headers span the full width */
+    text-align: center; /* Center text */
+    margin: 20px 0;
+}
+
+ul {
+    width: 100%; /* Ensuring list uses full width for alignment */
+}
+
+li {
+    background-color: #fff;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+li:hover {
+    background-color: #f1f1f1;
+}
+
+.recipe-details {
+    width: 100%; /* Control width to align with other elements */
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.recipe-details h2, .recipe-details h3, .recipe-details p {
+    text-align: left; /* Ensuring text aligns left within the centered container */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%; /* Full width on smaller screens */
+        position: fixed; /* Fixing sidebar to the top on small screens */
+        height: auto;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transform: translateY(-100%); /* Hide by default */
+    }
+
+    .main-content {
+        margin-top: 20px; /* Ensure content doesn't overlap with the sidebar */
+    }
+
+    .sidebar.active {
+        transform: translateY(0); /* Show sidebar when active */
+    }
+}
+
+/* Toggle button for responsive sidebar */
+.toggle-sidebar {
+    display: none; /* Hidden by default */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .toggle-sidebar {
+        display: block; /* Show toggle button on small screens */
+        position: fixed;
+        top: 10px;
+        left: 10px;
+    }
+}
